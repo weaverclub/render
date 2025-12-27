@@ -1,0 +1,25 @@
+{
+	"compilerOptions": {
+		"module": "ESNext",
+		"target": "ESNext",
+		"moduleResolution": "bundler",
+		"strict": true,
+		"noUncheckedIndexedAccess": true,
+		"baseUrl": ".",
+		"skipLibCheck": true,
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitOverride": true,
+		"lib": ["ESNext", "DOM"],
+		"moduleDetection": "force",
+		"jsx": "react-jsx",
+		"paths": {
+			"#*": ["./src/*"]
+		},
+		"plugins": [
+			{
+				"name": "@effect/language-service"
+			}
+		]
+	},
+	"exclude": ["dist", "node_modules"]
+}

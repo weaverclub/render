@@ -1,0 +1,51 @@
+{
+	"name": "@weaverclub/render",
+	"version": "0.0.1",
+	"description": "The simplest way to preview React components",
+	"packageManager": "bun@1.3.5",
+	"scripts": {
+		"router:gen": "tsr generate",
+		"router:watch": "tsr watch"
+	},
+	"bin": {
+		"render": "dist/entrypoint"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.3.10",
+		"@effect/language-service": "^0.62.5",
+		"@tanstack/router-cli": "^1.143.11",
+		"@types/bun": "1.3.5",
+		"@types/react": "^19.2.7",
+		"@types/react-dom": "^19.2.3",
+		"bun-plugin-tailwind": "^0.1.2",
+		"tailwindcss": "^4.1.18",
+		"tsdown": "^0.18.3",
+		"typescript": "5.9.3"
+	},
+	"dependencies": {
+		"@base-ui/react": "^1.0.0",
+		"@effect/cli": "^0.73.0",
+		"@effect/platform": "^0.94.0",
+		"@effect/platform-bun": "^0.87.0",
+		"@tailwindcss/cli": "^4.1.18",
+		"@tanstack/react-query": "^5.90.12",
+		"@tanstack/react-router": "^1.143.11",
+		"class-variance-authority": "^0.7.1",
+		"clsx": "^2.1.1",
+		"cmdk": "^1.1.1",
+		"effect": "^3.19.13",
+		"jotai": "^2.16.1",
+		"lucide-react": "^0.562.0",
+		"react": "^19.2.3",
+		"react-dom": "^19.2.3",
+		"tailwind-merge": "^3.4.0",
+		"tw-animate-css": "^1.4.0"
+	},
+	"main": "./dist/index.mjs",
+	"module": "./dist/index.mjs",
+	"types": "./dist/index.d.mts",
+	"exports": {
+		".": "./dist/index.mjs",
+		"./package.json": "./package.json"
+	}
+}
