@@ -1,6 +1,6 @@
 {
 	"name": "@weaverclub/render",
-	"version": "0.0.6",
+	"version": "0.0.8",
 	"description": "The simplest way to preview React components",
 	"packageManager": "bun@1.3.5",
 	"files": [
