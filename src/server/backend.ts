@@ -1,8 +1,9 @@
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { BunContext } from '@effect/platform-bun'
 import { Console, Effect } from 'effect'
 import type { CSS } from '#core/css/css'
 import type { ReactStory } from '#react/reactStory'
-import index from '../ui/index.html'
 import { getStories } from './api/getStories'
 import { renderIframe } from './api/renderIframe'
 
@@ -35,12 +36,32 @@ export const updateBackendState = ({
 	currentProjectRoot = projectRoot
 }
 
+// Get the directory where the CLI is located
+const getCliDir = () => {
+	// Use Node's fileURLToPath which handles Windows paths and URL encoding correctly
+	const currentFilePath = fileURLToPath(import.meta.url)
+	return path.dirname(currentFilePath)
+}
+
+// Create a Response from a static file
+const serveStaticFile = async (filePath: string, contentType: string) => {
+	const file = Bun.file(filePath)
+	if (await file.exists()) {
+		return new Response(file, {
+			headers: { 'Content-Type': contentType }
+		})
+	}
+	return new Response('Not found', { status: 404 })
+}
+
 export const startBackend = ({ stories, css, projectRoot }: StartBackendArgs) =>
 	Effect.sync(() => {
 		// Initialize mutable state
 		currentStories = stories
 		currentCss = css
 		currentProjectRoot = projectRoot
+
+		const cliDir = getCliDir()
 
 		return Bun.serve({
 			port: 3210,
@@ -59,13 +80,10 @@ export const startBackend = ({ stories, css, projectRoot }: StartBackendArgs) =>
 				'/api/stories': {
 					GET: (request) =>
 						Effect.runSync(getStories({ request, stories: currentStories }))
-				},
-				// Explicit routes for UI paths
-				'/': index,
-				'/index.html': index
+				}
 			},
 			// @ts-expect-error
-			fetch(req, server) {
+			async fetch(req, server) {
 				const url = new URL(req.url)
 
 				// Handle WebSocket upgrade for HMR
@@ -75,8 +93,23 @@ export const startBackend = ({ stories, css, projectRoot }: StartBackendArgs) =>
 					return new Response('WebSocket upgrade failed', { status: 500 })
 				}
 
-				// Fall back to index for any other paths (SPA routing)
-				return index
+				// Serve chunk files (JS and CSS assets)
+				if (url.pathname.startsWith('/chunk-')) {
+					const filename = url.pathname.slice(1) // Remove leading /
+					const filePath = path.join(cliDir, filename)
+					const ext = path.extname(filename)
+					const contentType =
+						ext === '.js'
+							? 'application/javascript'
+							: ext === '.css'
+								? 'text/css'
+								: 'application/octet-stream'
+					return serveStaticFile(filePath, contentType)
+				}
+
+				// Serve index.html for all other routes (SPA)
+				const indexPath = path.join(cliDir, 'index.html')
+				return serveStaticFile(indexPath, 'text/html')
 			},
 			websocket: {
 				open(ws) {

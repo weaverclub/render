@@ -1,10 +1,49 @@
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { Array as Arr, Effect, Option } from 'effect'
 
-// Path to the CLI bundled with this package (relative to this file in src/core/css/)
-const BUNDLED_CLI = new URL(
-	'../../../node_modules/@tailwindcss/cli/dist/index.mjs',
-	import.meta.url
-).pathname
+// Get the package root directory (where this package is installed)
+const getPackageRoot = () => {
+	const currentDir = dirname(fileURLToPath(import.meta.url))
+	// In source: src/core/css/ -> go up 3 levels to package root
+	// In dist: dist/cli/ -> go up 2 levels to package root
+	// We check by looking for node_modules
+	let dir = currentDir
+	for (let i = 0; i < 5; i++) {
+		const nodeModulesPath = join(dir, 'node_modules')
+		if (
+			Bun.file(join(nodeModulesPath, '@tailwindcss', 'cli', 'package.json'))
+				.size > 0
+		) {
+			return dir
+		}
+		dir = dirname(dir)
+	}
+	return currentDir
+}
+
+// Resolve the Tailwind CLI path
+// 1. Try user's project node_modules first
+// 2. Fall back to our package's node_modules
+const getTailwindCLI = (projectRoot: string): string => {
+	const cliRelPath = join(
+		'node_modules',
+		'@tailwindcss',
+		'cli',
+		'dist',
+		'index.mjs'
+	)
+
+	// Check user's project first
+	const userPath = join(projectRoot, cliRelPath)
+	if (Bun.file(userPath).size > 0) {
+		return userPath
+	}
+
+	// Fall back to our package
+	const packageRoot = getPackageRoot()
+	return join(packageRoot, cliRelPath)
+}
 
 // Cache for compiled CSS output - always kept updated
 let cachedCssOutput: string | null = null
@@ -25,9 +64,10 @@ export const compileTailwindCss = Effect.fn(function* (projectRoot: string) {
 	if (Option.isNone(entrypoint))
 		return yield* Effect.fail(new Error('No CSS files found for Tailwind CSS.'))
 
-	// Use bundled @tailwindcss/cli - runs via bun for speed
+	// Resolve @tailwindcss/cli from user's project or our package
+	const tailwindCLI = getTailwindCLI(projectRoot)
 	const proc = Bun.spawn(
-		['bun', BUNDLED_CLI, '-i', entrypoint.value, '--minify'],
+		['bun', tailwindCLI, '-i', entrypoint.value, '--minify'],
 		{
 			cwd: projectRoot,
 			stdout: 'pipe',
@@ -81,10 +121,11 @@ export const startTailwindWatchMode = Effect.fn(function* (
 	})
 
 	// Start Tailwind in watch mode - use 'inherit' for stderr to see errors
+	const tailwindCLI = getTailwindCLI(projectRoot)
 	const proc = Bun.spawn(
 		[
-			'bunx',
-			'@tailwindcss/cli',
+			'bun',
+			tailwindCLI,
 			'-i',
 			entrypoint.value,
 			'-o',

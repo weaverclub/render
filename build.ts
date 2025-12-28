@@ -1,5 +1,5 @@
 // We need to build:
-// 1. The UI frontend
+// 1. The UI frontend for CLI (bundled into dist/cli)
 // 2. The CLI
 // 3. The library
 
@@ -9,10 +9,11 @@ import tailwind from 'bun-plugin-tailwind'
 import { Effect } from 'effect'
 import { build as tsdownBuild } from 'tsdown'
 
-export const buildUI = Effect.tryPromise(() =>
+// Build UI into the CLI folder so it can serve static files
+export const buildUIForCLI = Effect.tryPromise(() =>
 	Bun.build({
 		entrypoints: ['./src/ui/index.html'],
-		outdir: './dist/ui',
+		outdir: './dist/cli', // Output directly to CLI folder
 		minify: true,
 		target: 'browser',
 		sourcemap: 'linked',
@@ -23,11 +24,17 @@ export const buildUI = Effect.tryPromise(() =>
 export const buildCLI = Effect.tryPromise(() =>
 	Bun.build({
 		entrypoints: ['./src/cli/entrypoint.ts'],
-		outdir: './dist',
+		outdir: './dist/cli',
 		minify: true,
-		compile: true,
 		target: 'bun',
-		sourcemap: 'linked'
+		naming: '[name].mjs',
+		external: [
+			'react',
+			'react-dom',
+			'react-dom/server',
+			'react/jsx-runtime',
+			'react/jsx-dev-runtime'
+		]
 	})
 )
 
@@ -55,8 +62,8 @@ const cleanFolder = FileSystem.FileSystem.pipe(
 
 cleanFolder.pipe(
 	Effect.tap(() => buildLibrary),
-	Effect.tap(() => buildUI),
-	Effect.tap(() => buildCLI),
+	Effect.tap(() => buildUIForCLI), // Build UI first
+	Effect.tap(() => buildCLI), // Then CLI
 	Effect.provide(BunContext.layer),
 	BunRuntime.runMain
 )
