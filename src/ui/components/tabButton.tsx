@@ -14,38 +14,40 @@ export function TabButton({ story, ...props }: TabButtonProps) {
 	const newTab = useNewTab()
 	const replaceTab = useReplaceTab()
 
-	function handleOpen(state: 'temporary' | 'permanent') {
-		return () => {
-			const existingTab = tabs.find((tab) => tab.path === story.id)
+	const open = (state: 'temporary' | 'permanent') => {
+		console.info('[TabButton] open', { story: story.id, state })
+		const existingTab = tabs.find((tab) => tab.path === story.id)
 
-			if (existingTab) {
-				return setActiveTab(existingTab.id)
-			}
+		if (existingTab) {
+			console.info('[TabButton] focusing existing tab', existingTab.id)
+			setActiveTab(existingTab.id)
+			return
+		}
 
-			if (activeTab?.temporary) {
-				return replaceTab(activeTab.id, {
-					name: story.name,
-					path: story.id,
-					temporary: state === 'temporary'
-				})
-			}
-
-			return newTab({
+		if (activeTab?.temporary) {
+			console.info('[TabButton] replacing temporary tab', activeTab.id)
+			replaceTab(activeTab.id, {
 				name: story.name,
 				path: story.id,
 				temporary: state === 'temporary'
 			})
+			return
 		}
+
+		newTab({
+			name: story.name,
+			path: story.id,
+			temporary: state === 'temporary'
+		})
 	}
 
-	function handleOpenInNewTab() {
-		return () => {
-			newTab({
-				name: story.name,
-				path: story.id,
-				temporary: false
-			})
-		}
+	const openInNewTab = () => {
+		console.info('[TabButton] open in new tab', { story: story.id })
+		newTab({
+			name: story.name,
+			path: story.id,
+			temporary: false
+		})
 	}
 
 	return (
@@ -53,18 +55,44 @@ export function TabButton({ story, ...props }: TabButtonProps) {
 			<ContextMenuTrigger
 				render={
 					<SidebarMenuButton
-						onClick={handleOpen('temporary')}
-						onDoubleClick={handleOpen('permanent')}
+						onClick={() => open('temporary')}
+						onDoubleClick={() => open('permanent')}
 						{...props}
 					/>
 				}
 			/>
 
 			<ContextMenuContent>
-				<ContextMenuItem onSelect={handleOpen('permanent')}>
+				<ContextMenuItem
+					onSelect={(event) => {
+						event.preventDefault?.()
+						event.stopPropagation?.()
+						console.info('[TabButton] context open')
+						open('permanent')
+					}}
+					onClick={(event) => {
+						event.preventDefault()
+						event.stopPropagation()
+						console.info('[TabButton] context open click')
+						open('permanent')
+					}}
+				>
 					Open
 				</ContextMenuItem>
-				<ContextMenuItem onSelect={handleOpenInNewTab()}>
+				<ContextMenuItem
+					onSelect={(event) => {
+						event.preventDefault?.()
+						event.stopPropagation?.()
+						console.info('[TabButton] context open in new tab')
+						openInNewTab()
+					}}
+					onClick={(event) => {
+						event.preventDefault()
+						event.stopPropagation()
+						console.info('[TabButton] context open in new tab click')
+						openInNewTab()
+					}}
+				>
 					Open in New Tab
 				</ContextMenuItem>
 			</ContextMenuContent>

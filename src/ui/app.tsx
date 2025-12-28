@@ -6,11 +6,13 @@ import { AppSidebar } from './components/appSidebar'
 import { SidebarProvider } from './components/sidebar'
 import { TabContent } from './components/tabContent'
 import { TabList } from './components/tabList'
-import { useActiveTab, useTabs } from './tabs'
+import { useActiveTab, useEnsureTabHistories, useTabs } from './tabs'
 
 export function App() {
 	const { activeTab, setActiveTab } = useActiveTab()
 	const [tabs] = useTabs()
+
+	useEnsureTabHistories()
 
 	const tabValue = activeTab?.id ?? null
 
