@@ -5,10 +5,19 @@
 	"packageManager": "bun@1.3.5",
 	"scripts": {
 		"router:gen": "tsr generate",
-		"router:watch": "tsr watch"
+		"router:watch": "tsr watch",
+		"build": "bun run build.ts",
+		"format": "bunx biome format --write",
+		"lint": "bunx biome lint && tsc --noEmit",
+		"prepublishOnly": "bun run build",
+		"release": "bun run publish.ts"
 	},
 	"bin": {
 		"render": "dist/entrypoint"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/weaverclub/render.git"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.3.10",
