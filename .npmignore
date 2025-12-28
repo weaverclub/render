@@ -1,5 +1,2 @@
-.tanstack
-.zed
-dist
-node_modules
-.vscode
+!dist
+!package.json
