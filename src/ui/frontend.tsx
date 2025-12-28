@@ -1,5 +1,6 @@
 import { createRoot, type Root } from 'react-dom/client'
 import './styles.css'
+import { queryClient } from './api'
 import { App } from './app'
 
 const elem = document.getElementById('root')
@@ -22,6 +23,10 @@ function setupHMR() {
 			iframe.src = url.toString()
 		})
 		console.log(`[HMR] Refreshed ${iframes.length} iframe(s)`)
+
+		// Invalidate stories query to refetch sidebar
+		queryClient.invalidateQueries({ queryKey: ['stories'] })
+		console.log('[HMR] Invalidated stories query')
 	}
 
 	function connect() {

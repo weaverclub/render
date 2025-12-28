@@ -7,7 +7,12 @@ export function TabContent() {
 	return (
 		<>
 			{tabs.map((tab) => (
-				<Tabs.Panel key={tab.id} value={tab.id} className="flex-1 min-h-0">
+				<Tabs.Panel
+					key={tab.id}
+					value={tab.id}
+					className="flex-1 min-h-0 data-[hidden]:hidden"
+					keepMounted
+				>
 					<iframe
 						src={`/iframe/${tab.path}`}
 						className="w-full h-full border-none bg-white"

@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
+import { useEffect } from 'react'
 import { getStories } from '#ui/api'
+import { useSyncTabsWithStories } from '#ui/tabs'
 import { Button } from './button'
 import { Kbd } from './kdb'
 import {
@@ -19,6 +21,15 @@ export function AppSidebar() {
 		queryKey: ['stories'],
 		queryFn: getStories
 	})
+
+	const syncTabsWithStories = useSyncTabsWithStories()
+
+	// Sync tabs with stories whenever stories change
+	useEffect(() => {
+		if (data) {
+			syncTabsWithStories(data)
+		}
+	}, [data, syncTabsWithStories])
 
 	return (
 		<Sidebar>

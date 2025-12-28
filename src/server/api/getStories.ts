@@ -6,9 +6,14 @@ export const getStories = ({ stories }: GetStoriesArgs) =>
 		const categorizedStories: Record<string, SimpleStory[]> = {}
 
 		for (const story of stories) {
-			const [category, storyName] = story.name.split('/')
+			const parts = story.name.split('/')
 
-			if (!category || !storyName) continue
+			// If no slash, use "Uncategorized" as category and full name as story name
+			const category =
+				parts.length > 1 ? parts.slice(0, -1).join('/') : 'Uncategorized'
+			const storyName = parts.length > 1 ? parts[parts.length - 1] : story.name
+
+			if (!storyName) continue
 
 			if (!categorizedStories[category]) {
 				categorizedStories[category] = []
