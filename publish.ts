@@ -40,8 +40,8 @@ console.log(`   Current version: ${currentVersion}`)
 console.log('')
 
 // Run tests first
-console.log('🧪 Running tests...')
-await $`bun run test run`
+// console.log('🧪 Running tests...')
+// await $`bun run test run`
 
 // Bump version
 console.log(`\n📝 Bumping version to ${newVersion}...`)

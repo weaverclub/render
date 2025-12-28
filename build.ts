@@ -49,7 +49,8 @@ const cleanFolder = FileSystem.FileSystem.pipe(
 		fs.remove('./dist', {
 			recursive: true
 		})
-	)
+	),
+	Effect.ignore
 )
 
 cleanFolder.pipe(
