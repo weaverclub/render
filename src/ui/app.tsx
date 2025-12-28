@@ -11,8 +11,8 @@ export function App() {
 		<QueryClientProvider client={queryClient}>
 			<SidebarProvider>
 				<AppSidebar />
-				<main className="flex flex-col w-full">
-					<Tabs.Root>
+				<main className="flex flex-col w-full h-screen overflow-hidden">
+					<Tabs.Root className="flex flex-col flex-1 min-h-0">
 						<TabList />
 						<TabContent />
 					</Tabs.Root>

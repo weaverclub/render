@@ -107,6 +107,75 @@ export const startBackend = ({ stories, css, projectRoot }: StartBackendArgs) =>
 					return serveStaticFile(filePath, contentType)
 				}
 
+				// Serve font files from /_fonts/ path (rewritten URLs from CSS)
+				// e.g., /_fonts/files/inter-latin.woff2 -> node_modules/@fontsource-variable/inter/files/inter-latin.woff2
+				if (url.pathname.startsWith('/_fonts/')) {
+					const fontFile = url.pathname.replace('/_fonts/', '')
+
+					// Search for the font file in common @fontsource packages
+					const fontSearchPaths = [
+						// Direct path in node_modules
+						path.join(
+							currentProjectRoot,
+							'node_modules',
+							'@fontsource-variable',
+							'inter',
+							fontFile
+						),
+						path.join(
+							currentProjectRoot,
+							'node_modules',
+							'@fontsource',
+							'inter',
+							fontFile
+						),
+						// Go up from projectRoot (which might be src/) to find node_modules
+						path.join(
+							path.dirname(currentProjectRoot),
+							'node_modules',
+							'@fontsource-variable',
+							'inter',
+							fontFile
+						),
+						path.join(
+							path.dirname(currentProjectRoot),
+							'node_modules',
+							'@fontsource',
+							'inter',
+							fontFile
+						)
+					]
+
+					for (const fontPath of fontSearchPaths) {
+						const file = Bun.file(fontPath)
+						if (await file.exists()) {
+							const ext = path.extname(fontPath)
+							const contentType =
+								ext === '.woff2'
+									? 'font/woff2'
+									: ext === '.woff'
+										? 'font/woff'
+										: ext === '.ttf'
+											? 'font/ttf'
+											: ext === '.otf'
+												? 'font/otf'
+												: 'application/octet-stream'
+							return new Response(file, {
+								headers: {
+									'Content-Type': contentType,
+									'Cache-Control': 'public, max-age=31536000'
+								}
+							})
+						}
+					}
+					console.log(
+						'[backend] Font not found:',
+						fontFile,
+						'searched:',
+						fontSearchPaths
+					)
+				}
+
 				// Serve index.html for all other routes (SPA)
 				const indexPath = path.join(cliDir, 'index.html')
 				return serveStaticFile(indexPath, 'text/html')

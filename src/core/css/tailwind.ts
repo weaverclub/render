@@ -2,6 +2,16 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Array as Arr, Effect, Option } from 'effect'
 
+// Rewrite relative font URLs to absolute paths for server serving
+// e.g., url(./files/inter-latin.woff2) -> url(/_fonts/files/inter-latin.woff2)
+const rewriteFontUrls = (css: string, _projectRoot: string): string => {
+	// Match url() with relative paths to font files
+	return css.replace(
+		/url\(\.\/([^)]+\.(woff2?|ttf|otf|eot))\)/gi,
+		'url(/_fonts/$1)'
+	)
+}
+
 // Get the package root directory (where this package is installed)
 const getPackageRoot = () => {
 	const currentDir = dirname(fileURLToPath(import.meta.url))
@@ -91,11 +101,15 @@ export const compileTailwindCss = Effect.fn(function* (projectRoot: string) {
 			new Error(`Tailwind CSS compilation failed: ${stderr}`)
 		)
 
-	cachedCssOutput = stdout
+	// Rewrite relative font URLs to absolute paths that the server can serve
+	// e.g., url(./files/inter-latin.woff2) -> url(/_fonts/@fontsource-variable/inter/files/inter-latin.woff2)
+	const rewrittenOutput = rewriteFontUrls(stdout, projectRoot)
+
+	cachedCssOutput = rewrittenOutput
 
 	return {
 		paths: files,
-		compiledOutput: stdout
+		compiledOutput: rewrittenOutput
 	}
 })
 
