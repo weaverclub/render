@@ -138,7 +138,8 @@ export const getWatchedCss = Effect.fn(function* () {
 	let attempts = 0
 	while (attempts < 10) {
 		const css = yield* Effect.tryPromise(async () => {
-			const file = Bun.file(tailwindWatcher!.outputFile)
+			if (!tailwindWatcher) return ''
+			const file = Bun.file(tailwindWatcher.outputFile)
 			return file.text()
 		})
 

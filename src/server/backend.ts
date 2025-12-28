@@ -64,6 +64,7 @@ export const startBackend = ({ stories, css, projectRoot }: StartBackendArgs) =>
 				'/': index,
 				'/index.html': index
 			},
+			// @ts-expect-error
 			fetch(req, server) {
 				const url = new URL(req.url)
 
